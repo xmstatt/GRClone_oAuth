@@ -1,0 +1,340 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="Michael Stattelman">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <title>GRClone</title>
+    <!-- Bootstrap core CSS -->
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.2.0/css/all.css" integrity="sha384-hWVjflwFxL6sNzntih27bfxkr27PmbbK/iSvJ+a4+0owXq79v+lsFkW54bOGbiDQ" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" media="all" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
+<style>
+body {
+  background: rgba(255,255,240) url('https://hdwallsource.com/img/2014/9/digital-backgrounds-30959-31690-hd-wallpapers.jpg');
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+input, textarea {
+  -webkit-font-smoothing: antialiased;
+  -webkit-text-size-adjust: 100%;
+  -ms-text-size-adjust: 100%;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+  outline: none;
+}
+strong, b { font-weight: bold; }
+a {
+  color: #8eadd2;
+}
+a:hover {
+  color: #6e91b9;
+}
+#ghapidata {
+  display: block;
+  padding: 10px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  height : 450px;
+}
+
+/* input field */
+input[type=text] {
+  display: block;
+  padding: 5px 5px;
+  font-size: 1.4em;
+  width: 100%;
+  margin-bottom: 15px;
+}
+input[type=password] {
+  display: block;
+  padding: 5px 5px;
+  font-size: 1.4em;
+  width: 100%;
+  margin-bottom: 15px;
+}
+/* clearfix */
+.clearfix:after { content: "."; display: block; clear: both; visibility: hidden; line-height: 0; height: 0; }
+.clearfix { display: inline-block; }
+html[xmlns] .clearfix { display: block; }
+* html .clearfix { height: 1%; }
+.divCards{
+  padding: 15px 25px;
+  -webkit-box-shadow: 0 9px rgba(0,0,0,0.7);
+  -moz-box-shadow: 0 9px rgba(0,0,0,0.7);
+  box-shadow: 0 5px rgba(0,0,0,0.7);
+  -webkit-border-radius: 10px;
+  -moz-border-radius: 10px;
+  border-radius: 10px;
+}
+  
+  
+#divOutput{
+  display: none;
+  padding : 1px;
+  font-family: monospace;
+  background-color: black;
+  text-align: left;
+  text-decoration: none;
+  font-size: 1em;
+}
+#btn_oAuth{
+  display: none;
+}
+#btn_clonerepo{
+  display: none;
+}
+#btn_cloneview{
+  display: none;
+}
+</style>
+  </head>
+  <body>
+    <div class="navbar navbar-dark bg-dark shadow-sm">
+      <h5 class="navbar-brand d-flex align-items-center">GRClone by Michael Stattelman</h5>
+      <div>
+        <a class="btn btn-outline-primary align-items-right" href="https://github.com/mstatt/GRClone_Application"  target="_blank" rel="noopener noreferrer"><i class="fab fa-github"></i> This Repository </a>&nbsp;
+        <a class="btn btn-outline-primary" href="https://github.com/" target="_blank" rel="noopener noreferrer">Sign Up <i class="fab fa-github"></i></a>
+      </div>
+    </div>
+    <div class="pricing-header px-3 py-3 pt-md-5 pb-md-4 mx-auto text-center">
+      <h1 class="display-4">GRClone</h1>
+      <p class="lead">Easily clone this applications code to your own Github Repository. </p> <p class="lead">Then host it using GitHub Pages If you do not already have a Github account<br/>click the button on the top right of the page and join today.</p>
+    </div>
+    <div class="container" style="width: 35rem;">
+      <div class="card-deck mb-4 text-center">
+        <div class="card mb-1 shadow-sm divCards" >
+          <div class="card-header">
+            <h2 class="my-0 font-weight-normal"id="section_title">Allow Authorization</h2>
+          </div>
+          <div class="card-body">
+            <button class="btn btn-lg btn-block btn-primary cloneit" id="btn_oAuth"><i class="fab fa-github"></i> Authorize</button>
+            <button class="btn btn-lg btn-block btn-success cloneit" id="btn_clonerepo"><i class="fab fa-github"></i> Click to clone</button>
+            <button class="btn btn-lg btn-block btn-success cloneit" id="btn_cloneview"><i class="fab fa-github"></i> View your Repository</button>
+          </div>
+          <div id="divOutput"></div>
+        </div>
+      </div>
+    </div>
+
+   <script type="text/javascript">
+    $(function(){
+      //Set up initial variables
+            var xToken;
+            var thisOne;
+            var xUser;
+            var xPath;
+                //Set up our repo variables
+            var clreponame = "GRClone_oAuth";
+            var filename = "index.html";
+            var filename2 = "README.md";
+	    var filename3 = "index.php";
+            var filecontent ="";
+            var filecontent2 ="";
+	    var filecontent3 ="";
+      //Parse query string for params
+        var getQueryString = function ( field, url ) {
+        	var href = url ? url : window.location.href;
+        	var reg = new RegExp( '[?&]' + field + '=([^&#]*)', 'i' );
+        	var string = reg.exec(href);
+        	return string ? string[1] : null;
+        };
+    //Check to see if code exists to determine which button shows
+          url = new URL(window.location.href);
+          //console.log(url);
+          //If exists we get the code value from param
+          //Then we determine which button to display
+          if (url.searchParams.get('code')) {
+            thisOne = getQueryString('code');
+            //Determine which button to display
+            $("#btn_oAuth").hide();
+	    $("#btn_cloneview").hide();
+            $("#divOutput").show();
+            $("#section_title").text('Almost ready');
+            $("#divOutput").append('<font color="#00FF00">>>>Successful code reception from GitHub</font>');
+            getToken(thisOne);
+            xUser = sessionStorage.getItem("xUser");
+            xPath = sessionStorage.getItem("xPath");
+          }else{
+            $("#btn_oAuth").show();
+	    $("#btn_cloneview").hide();
+            $("#btn_clonerepo").hide();
+          }
+      
+          //Launch oAuth page passing over our Application ClientID
+        $("body").delegate("#btn_oAuth", "click", function() {
+          window.location.replace("https://github.com/login/oauth/authorize?client_id=06bdc4f456f1d24fb8bb&scope=repo");
+        });
+	    
+        $("body").delegate("#btn_cloneview", "click", function() {
+	//Get New Repo URl from session and appliy to click action
+          var cl_Url = sessionStorage.getItem("cl_Url");
+          window.location.replace(cl_Url);
+        });	    
+	    
+
+        //Clone repository process
+$("body").delegate("#btn_clonerepo", "click", function() {
+          //Clear the output div
+          $("#divOutput").html('');
+          //Load the contents of the file into a variable
+          $.get(filename, function(responseA) {
+              filecontent = responseA;
+          });
+          $.get(filename2, function(responseB) {
+              filecontent2 = responseB;
+          });
+	  $.get(filename3, function(responseC) {
+              filecontent3 = responseC;
+          });
+          //Store values in session for access later
+          xUser = sessionStorage.getItem("xUser");
+          xPath = sessionStorage.getItem("xPath");
+          //Initial function Call to clone repository
+          repoCreation(xToken,clreponame,xUser,xPath);
+});
+
+      
+      
+function getToken(thisOne){
+     //Here I post code and params back to a php page that forwards with credentials to GitHub in exchange for auth_token
+      $.get('https://grclone.000webhostapp.com/?code=' + thisOne, function (data) {
+        xToken = data;
+        //console.log('access_token: '+xToken);
+        $("#divOutput").append('<br/><font color="#00FF00">>>>Token authentication received</font>');
+        //--------------------------------------------------------------------------------
+          //Pass token back to github to get username for use with repository creation
+          $.getJSON('https://api.github.com/user?access_token=' + xToken, function (user) {
+            //console.log(user);
+            sessionStorage.setItem("xUser",user.login);
+            $("#divOutput").append('<br/><font color="#00FF00">>>>Welcome.. '+user.login+'</font>');
+            sessionStorage.setItem("xPath",user.repos_url);
+            $("#divOutput").append('<br/><font color="#00FF00">>>>'+user.repos_url+'</font>');
+            $("#btn_clonerepo").show();
+            $("#section_title").html('<font color="#007F00">Authorization Success.</font>');
+        });
+      });
+}
+
+
+
+function repoCreation(xToken,clreponame,xUser,xPath){
+    //Here the repo gets set up
+    //console.log('User url :'+xPath);
+	var data = JSON.stringify({
+		"name": clreponame,
+            "description": "GRClone_oAuth (Self Cloning Application): ZERO Installs, Dual file execution..",
+            "homepage": 'https://github.com/'+xUser+'/'+clreponame,
+            "private": false,
+            "auto_init": false
+	});
+	$.ajax({
+        url: 'https://api.github.com/user/repos' + '?access_token=' + xToken,
+        type: 'POST',
+        data: data
+	    }).done(function(response1) {
+	       //console.log('Repository URL: '+response1.html_url);
+		sessionStorage.setItem("cl_Url",response1.html_url);
+	      //Alert user to progress
+	      $("#divOutput").append('<br/><font color="#00FF00">Repository creation completed.</font>');
+		//console.log(response1);
+		//------------------------------------------------------------------------------------------
+		//Call function to upload files to the repository
+		repoFiles(xToken,response1);
+		//------------------------------------------------------------------------------------------
+	    }).fail(function (response1) {
+		   console.log(response1);
+		   $("#section_title").html('<font color="#FF0000">System Error.</font>');
+		   $("#divOutput").append('<font color="#FF0000">>>>Repository creation failed.</font>');
+	    });
+	
+}
+
+
+
+function repoFiles(xToken,response1,xPath){
+  //Here we place files in the repository
+  var filemessage = "Uploading base index.html";
+  //console.log('repoFiles with token :'+xToken);
+  //Encode the file contents
+  var basecontent = btoa(filecontent);
+  //Get the path to the repo and append the filename
+  var apiurl = response1.contents_url.replace('{+path}',filename);
+  console.log(apiurl);
+  var filedata = '{"message":"'+filemessage+'","content":"'+basecontent+'"}';
+        $.ajax({
+            url: apiurl,
+            type: 'PUT',
+            beforeSend: function(xhr) {
+                xhr.setRequestHeader("Authorization", "token "+xToken);
+            },
+            data: filedata
+        }).done(function(response3) {
+          //console.log('Response3: '+ response3);
+            //Alert user to progress
+          $("#divOutput").append('<br/><font color="#00FF00">>>>index.html completed.</font>');
+          //------------------------------------------------------------------------------------------
+                        $("#divOutput").append('<font color="#00FF00">Index.html completed.</font>');
+                        var filemessage2 = "Uploading base README.md";
+                      //Encode the file contents
+                      var basecontent2 = btoa(filecontent2);
+                      //Get the path to the repo and append the filename
+                      var apiurl2 = response1.contents_url.replace('{+path}',filename2);
+                      var filedata2 = '{"message":"'+filemessage2+'","content":"'+basecontent2+'"}';
+                      $.ajax({
+                         url: apiurl2,
+                         type: 'PUT',
+                         beforeSend: function(xhr) {
+                             xhr.setRequestHeader("Authorization", "token "+xToken);
+                         },
+                         data: filedata2
+                          }).done(function(response4) {
+                             //Alert user to progress
+                             $("#divOutput").append('<br/><font color="#00FF00">>>>README.md completed.</font>');
+                             //-----------------------------------------------------------------------------------------------
+			      var filemessage3 = "Uploading base index.php";
+			      //Encode the file contents
+			      var basecontent3 = btoa(filecontent3);
+			      //Get the path to the repo and append the filename
+			      var apiurl3 = response1.contents_url.replace('{+path}',filename3);
+			      var filedata3 = '{"message":"'+filemessage3+'","content":"'+basecontent3+'"}';
+			      $.ajax({
+				 url: apiurl3,
+				 type: 'PUT',
+				 beforeSend: function(xhr) {
+				     xhr.setRequestHeader("Authorization", "token "+xToken);
+				 },
+				 data: filedata3
+				  }).done(function(response5) {
+				     $("#btn_cloneview").show();
+                                     $("#btn_clonerepo").hide();
+				     //Alert user to progress
+				     $("#divOutput").append('<br/><font color="#00FF00">>>>index.php completed.</font>');
+				     $("#section_title").html('<font color="#007F00">Cloning completed successfully.</font>');
+				      $("#divOutput").append('<br/><font color="#00FF00">>>>This application has been cloned tou your repository.</font>');
+				  }).fail(function (response5) {
+				     console.log(response5);
+				      $("#section_title").html('<font color="#FF0000">System Error.</font>');
+				      $("#divOutput").append('<font color="#FF0000">index.php creation failed.</font>');
+				  });
+			     //-----------------------------------------------------------------------------------------------
+                          }).fail(function (response4) {
+                             console.log(response4);
+                              $("#section_title").html('<font color="#FF0000">System Error.</font>');
+                              $("#divOutput").append('<font color="#FF0000">README.md creation failed.</font>');
+                          });
+          //------------------------------------------------------------------------------------------
+          }).fail(function (response3) {
+                    console.log(response3);
+                    $("#section_title").html('<font color="#FF0000">System Error.</font>');
+                    $("#divOutput").append('<font color="#FF0000">>>>index.html creation failed.</font>');          
+          });
+}
+
+//End main Function
+  });
+    </script>
+  </body>
+</html>
